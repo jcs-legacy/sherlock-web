@@ -82,7 +82,7 @@ function executeCommand(input) {
 
 /**
  * Start hunting down accounts from social network.
- * @param {} input - Must be a valid username.
+ * @param {string} input - Must be a valid username.
  */
 function executeUsername(input) {
 
