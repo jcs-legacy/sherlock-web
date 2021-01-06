@@ -5,10 +5,11 @@ var tb_search = document.getElementById('tb-search');
 var btn_search = document.getElementById('btn-search');
 var info_version = document.getElementById('info-version');
 var sherlock_data = { };
+var sites_count = 0;
 var version_info = "";
 
-const query_count = 50;   // How many query per request.
-const query_counter = 0;  // Current process to Sherlock
+var query_counter = 0;     // Current process to Sherlock
+var hunting = false;  // Flag to check weather if current hunting state
 
 /* (@* "Utility" ) */
 
@@ -50,11 +51,30 @@ function enableTextArea(enable) {
 /* Return true if INPUT is a valid username. */
 function validUsername(input) { return !input.includes('-'); }
 
+/* Form next query argument. */
+function getNextQuery(input) {
+  let args = input + " --print-all";
+  let keys = Object.keys(sherlock_data);
+  let limit = query_counter + QUERY_COUNT;
+  for (let cnt = query_counter; cnt < limit; ++cnt) {
+    args += " --site \"" + keys[cnt] + "\"";
+  }
+  query_counter += QUERY_COUNT;
+  if (query_counter > sites_count)
+    hunting = false;  // Done query from server
+  return args;
+}
+
+function validate_data(data) {
+  return data.replaceAll(/\r\n/g, '\n');
+}
+
 /* (@* "Preparation" ) */
 
 function init() {
   request("GET", "http://localhost:8000/data/", function (xhr) {
     sherlock_data = JSON.parse(xhr.response);
+    sites_count = Object.keys(sherlock_data).length;
   });
   request("POST", "http://localhost:8000/cli/", function (xhr) {
     let result = JSON.parse(xhr.response);
@@ -75,7 +95,8 @@ function executeCommand(input) {
   request("POST", "http://localhost:8000/cli/", function (xhr) {
     enableSearch(true);
     let result = JSON.parse(xhr.response);
-    append(result['output']);
+    let output = result['output'];
+    append(output);
     enableTextArea(true);
   }, JSON.stringify({ args: input }));
 }
@@ -85,7 +106,24 @@ function executeCommand(input) {
  * @param {string} input - Must be a valid username.
  */
 function executeUsername(input) {
-
+  let args = getNextQuery(input);
+  request("POST", "http://localhost:8000/cli/", function (xhr) {
+    let result = JSON.parse(xhr.response);
+    let output = result['output'];
+    output = validate_data(output);
+    {
+      let lines = output.split('\n');
+      lines.splice(0,1);
+      output = lines.join('\n');
+      output = output.slice(0, -1);
+    }
+    append(output);
+    enableTextArea(true);
+    if (hunting)
+      executeUsername(input);
+    else
+      enableSearch(true);
+  }, JSON.stringify({ args: args }));
 }
 
 /* Execution when user hit search button */
@@ -94,7 +132,9 @@ function search() {
   erase();
   let input = tb_search.value;
   if (validUsername(input)) {
-
+    query_counter = 0;  // reset query counter
+    hunting = true;
+    executeUsername(input);
   } else {
     executeCommand(input);
   }
