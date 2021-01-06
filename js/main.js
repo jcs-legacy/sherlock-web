@@ -10,7 +10,7 @@ var version_info = "";
 const query_count = 50;   // How many query per request.
 const query_counter = 0;  // Current process to Sherlock
 
-/* Utility */
+/* (@* "Utility" ) */
 
 function append(str) {
   textarea.innerHTML += str;
@@ -41,7 +41,16 @@ function enableSearch (enable) {
   btn_search.disabled = !enable;
 }
 
-/* Preparation */
+/* Hide or Show text area. */
+function enableTextArea(enable) {
+  if (enable) textarea.style.display = 'inline';
+  else textarea.style.display = 'none';
+}
+
+/* Return true if INPUT is a valid username. */
+function validUsername(input) { return !input.includes('-'); }
+
+/* (@* "Preparation" ) */
 
 function init() {
   request("GET", "http://localhost:8000/data/", function (xhr) {
@@ -56,22 +65,42 @@ function init() {
 }
 init();
 
-/* Core */
+/* (@* "Core" ) */
 
-function search() {
-  enableSearch(false);
-  erase();
-  let args = tb_search.value;
+/**
+ * Execute command except start searching for username.
+ * @param {string} input - Other valid command except username.
+ */
+function executeCommand(input) {
   request("POST", "http://localhost:8000/cli/", function (xhr) {
     enableSearch(true);
     let result = JSON.parse(xhr.response);
     append(result['output']);
-  }, JSON.stringify({ args: args }));
+    enableTextArea(true);
+  }, JSON.stringify({ args: input }));
 }
 
-/* Register */
+/**
+ * Start hunting down accounts from social network.
+ * @param {} input - Must be a valid username.
+ */
+function executeUsername(input) {
 
-tb_search.onkeyup = function(event) {
-  if (event.keyCode === 13) { search(); }
-};
+}
+
+/* Execution when user hit search button */
+function search() {
+  enableSearch(false);
+  erase();
+  let input = tb_search.value;
+  if (validUsername(input)) {
+
+  } else {
+    executeCommand(input);
+  }
+}
+
+/* (@* "Register" ) */
+
+tb_search.onkeyup = function(event) { if (event.keyCode === 13) { search(); } };
 btn_search.onclick = search;
