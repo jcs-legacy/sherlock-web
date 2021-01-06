@@ -37,7 +37,7 @@ function request(type, url, callback, body) {
  * Enable/Disable search area elements.
  * @param {boolean} enable - True to enable, False to disable.
  */
-function enableSearch (enable) {
+function enableSearch(enable) {
   tb_search.disabled = !enable;
   btn_search.disabled = !enable;
 }
@@ -75,6 +75,7 @@ function init() {
   request("GET", "http://localhost:8000/data/", function (xhr) {
     sherlock_data = JSON.parse(xhr.response);
     sites_count = Object.keys(sherlock_data).length;
+    enableSearch(true);
   });
   request("POST", "http://localhost:8000/cli/", function (xhr) {
     let result = JSON.parse(xhr.response);
