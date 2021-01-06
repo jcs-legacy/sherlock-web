@@ -38,6 +38,7 @@ a {
   background: #0E161B;
   color: white;
   padding: 10px;
+  display: none;
 }
 
 .footer {
