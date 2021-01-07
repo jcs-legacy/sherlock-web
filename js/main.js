@@ -13,6 +13,9 @@ var hunting = false;  // Flag to check weather if current hunting state
 
 /* (@* "Utility" ) */
 
+/* Construct base URL address. */
+function getAddress() { return 'http://' + HOST + ':' + PORT; }
+
 function append(str) {
   textarea.innerHTML += str;
   // Add upp `rows` for every newline
@@ -72,12 +75,12 @@ function validate_data(data) {
 /* (@* "Preparation" ) */
 
 function init() {
-  request("GET", "http://localhost:8000/data/", function (xhr) {
+  request("GET", getAddress() + "/data/", function (xhr) {
     sherlock_data = JSON.parse(xhr.response);
     sites_count = Object.keys(sherlock_data).length;
     enableSearch(true);
   });
-  request("POST", "http://localhost:8000/cli/", function (xhr) {
+  request("POST", getAddress() + "/cli/", function (xhr) {
     let result = JSON.parse(xhr.response);
     version_info = result['output'];
     if (SHOW_VERSION)
@@ -93,7 +96,7 @@ init();
  * @param {string} input - Other valid command except username.
  */
 function executeCommand(input) {
-  request("POST", "http://localhost:8000/cli/", function (xhr) {
+  request("POST", getAddress() + "/cli/", function (xhr) {
     enableSearch(true);
     let result = JSON.parse(xhr.response);
     let output = result['output'];
@@ -108,7 +111,7 @@ function executeCommand(input) {
  */
 function executeUsername(input) {
   let args = getNextQuery(input);
-  request("POST", "http://localhost:8000/cli/", function (xhr) {
+  request("POST", getAddress() + "/cli/", function (xhr) {
     let result = JSON.parse(xhr.response);
     let output = result['output'];
     output = validate_data(output);
