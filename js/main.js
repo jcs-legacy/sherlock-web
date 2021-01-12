@@ -52,7 +52,9 @@ function enableTextArea(enable) {
 }
 
 /* Return true if INPUT is a valid username. */
-function validUsername(input) { return !input.includes('-'); }
+function validUsername(input) {
+  return !input.includes('-') && input !== '';
+}
 
 /* Form next query argument. */
 function getNextQuery(input) {
