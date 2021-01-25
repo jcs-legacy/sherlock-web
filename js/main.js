@@ -56,6 +56,11 @@ function validUsername(input) {
   return !input.includes('-') && input !== '';
 }
 
+/* Return true, if INPUT may be XSS. */
+function isSensitive(input) {
+  return input.includes(';');
+}
+
 /* Form next query argument. */
 function getNextQuery(input) {
   let args = input + " --print-all";
@@ -137,12 +142,17 @@ function search() {
   enableSearch(false);
   erase();
   let input = tb_search.value;
-  if (validUsername(input)) {
-    query_counter = 0;  // reset query counter
-    hunting = true;
-    executeUsername(input);
+  if (isSensitive(input)) {  // May be XSS
+    append("[ERROR] Command contains invalid characters");
+    enableTextArea(true);
   } else {
-    executeCommand(input);
+    if (validUsername(input)) {
+      query_counter = 0;  // reset query counter
+      hunting = true;
+      executeUsername(input);
+    } else {
+      executeCommand(input);
+    }
   }
 }
 
