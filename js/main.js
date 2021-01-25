@@ -58,7 +58,13 @@ function validUsername(input) {
 
 /* Return true, if INPUT may be XSS. */
 function isSensitive(input) {
-  return input.includes(';');
+  let escape = [";", "&", "<", ">", "=", "\"", "'"];
+  for (let index = 0; index < escape.length; ++index) {
+    if (input.includes(escape[index])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /* Form next query argument. */
@@ -121,12 +127,16 @@ function executeUsername(input) {
   request("POST", getAddress() + "/cli/", function (xhr) {
     let result = JSON.parse(xhr.response);
     let output = result['output'];
-    output = validate_data(output);
-    {
-      let lines = output.split('\n');
-      lines.splice(0,1);
-      output = lines.join('\n');
-      output = output.slice(0, -1);
+    if (output === 'Invalid argument string') {
+      hunting = false;
+    } else {
+      output = validate_data(output);
+      {
+        let lines = output.split('\n');
+        lines.splice(0,1);
+        output = lines.join('\n');
+        output = output.slice(0, -1);
+      }
     }
     append(output);
     enableTextArea(true);
@@ -143,16 +153,19 @@ function search() {
   erase();
   let input = tb_search.value;
   if (isSensitive(input)) {  // May be XSS
-    append("[ERROR] Command contains invalid characters");
-    enableTextArea(true);
+    //append("[ERROR] Command contains invalid characters");
+    //enableTextArea(true);
+    //enableSearch(true);
   } else {
-    if (validUsername(input)) {
-      query_counter = 0;  // reset query counter
-      hunting = true;
-      executeUsername(input);
-    } else {
-      executeCommand(input);
-    }
+
+  }
+
+  if (validUsername(input)) {
+    query_counter = 0;  // reset query counter
+    hunting = true;
+    executeUsername(input);
+  } else {
+    executeCommand(input);
   }
 }
 
