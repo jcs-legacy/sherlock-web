@@ -153,19 +153,17 @@ function search() {
   erase();
   let input = tb_search.value;
   if (isSensitive(input)) {  // May be XSS
-    //append("[ERROR] Command contains invalid characters");
-    //enableTextArea(true);
-    //enableSearch(true);
+    append("[ERROR] Command contains invalid characters");
+    enableTextArea(true);
+    enableSearch(true);
   } else {
-
-  }
-
-  if (validUsername(input)) {
-    query_counter = 0;  // reset query counter
-    hunting = true;
-    executeUsername(input);
-  } else {
-    executeCommand(input);
+    if (validUsername(input)) {
+      query_counter = 0;  // reset query counter
+      hunting = true;
+      executeUsername(input);
+    } else {
+      executeCommand(input);
+    }
   }
 }
 
